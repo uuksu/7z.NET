@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Text.RegularExpressions;
 using SevenZipNET.Arguments;
+using System.Collections.ObjectModel;
 
 namespace SevenZipNET
 {
@@ -47,14 +48,14 @@ namespace SevenZipNET
 
             archive = filename;
 
-            _indexCache = new Lazy<IReadOnlyList<ArchiveFile>>(Index);
+            _indexCache = new Lazy<ReadOnlyCollection<ArchiveFile>>(Index);
         }
 
         /// <summary>
         /// Returns a list of files inside the archive.
         /// </summary>
         /// <returns>The list of files inside the archive.</returns>
-        protected IReadOnlyList<ArchiveFile> Index()
+        protected ReadOnlyCollection<ArchiveFile> Index()
         {
             List<ArchiveFile> files = new List<ArchiveFile>();
 
@@ -87,12 +88,12 @@ namespace SevenZipNET
             return files.AsReadOnly();
         }
 
-        private Lazy<IReadOnlyList<ArchiveFile>> _indexCache;
+        private Lazy<ReadOnlyCollection<ArchiveFile>> _indexCache;
 
         /// <summary>
         /// Information relating to each file stored inside the archive.
         /// </summary>
-        public IReadOnlyList<ArchiveFile> Files
+        public ReadOnlyCollection<ArchiveFile> Files
         {
             get
             {
