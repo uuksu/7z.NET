@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 namespace SevenZipNET.Tests
 {
     [DeploymentItem("test.7z")]
+    [DeploymentItem("testbroke.7z")]
     [DeploymentItem("7za.exe")]
     [DeploymentItem("7za64.exe")]
     [TestClass()]
@@ -68,6 +69,18 @@ namespace SevenZipNET.Tests
 
             foreach (string s in Directory.EnumerateFiles(dir))
                 File.Delete(s);
+        }
+
+        [TestMethod()]
+        public void TestTest()
+        {
+            var ext = new SevenZipExtractor("testbroke.7z");
+
+            Assert.IsFalse(ext.TestArchive());
+
+            ext = new SevenZipExtractor("test.7z");
+
+            Assert.IsTrue(ext.TestArchive());
         }
     }
 }

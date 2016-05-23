@@ -153,5 +153,22 @@ namespace SevenZipNET
 
             p.Execute();
         }
+
+        /// <summary>
+        /// Tests the archive to see if it is valid.
+        /// </summary>
+        /// <returns>If the archive is valid.</returns>
+        public bool TestArchive()
+        {
+            WProcess p = new WProcess(new ArgumentBuilder()
+                .AddCommand(SevenZipCommands.Test, archive)
+                );
+
+            p.ProgressUpdated += ProgressUpdated;
+
+            string aggregate = string.Join(" ", p.Execute());
+
+            return aggregate.Contains("Everything is Ok"); //a bit hacky but it's fine
+        }
     }
 }
