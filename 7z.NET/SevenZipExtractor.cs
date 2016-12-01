@@ -15,7 +15,8 @@ namespace SevenZipNET
     /// </summary>
     public class SevenZipExtractor : SevenZipBase
     {
-        private string archive;
+        private readonly string archive;
+        private readonly string password;
 
         internal static Regex indexReg = new Regex(@"^(\d{2,4}-\d{2,4}-\d{2,4})\s+(\d{2}:\d{2}:\d{2})\s+(.{5})\s+(\d+)\s+(\d+)?\s+(.+)");
         
@@ -49,6 +50,11 @@ namespace SevenZipNET
             archive = filename;
 
             _indexCache = new Lazy<ReadOnlyCollection<ArchiveFile>>(Index);
+        }
+
+        public SevenZipExtractor(string filename, string password) : this(filename)
+        {
+            this.password = password;
         }
 
         /// <summary>
@@ -120,12 +126,14 @@ namespace SevenZipNET
         /// <param name="keepStructure">Whether or not to retain folder structure in the archive. Default true.</param>
         public void ExtractAll(string destination, bool overwrite = false, bool keepStructure = true)
         {
-            WProcess p = new WProcess(new ArgumentBuilder()
-                .AddCommand(keepStructure ? SevenZipCommands.ExtractWithStructure : SevenZipCommands.Extract, archive)
-                .AddSwitch(new SwitchOutputStream(OutputStream.Progress, OutputStreamState.Stdout))
-                .AddSwitch(new SwitchOverwrite(overwrite))
-                .AddSwitch(new SwitchDestination(destination))
-                );
+            ArgumentBuilder argumentBuilder = GetExtractArguments(destination, overwrite, keepStructure);
+
+            if (!string.IsNullOrEmpty(password))
+            {
+                argumentBuilder.AddSwitch(new SwitchPassword(password));
+            }
+
+            WProcess p = new WProcess(argumentBuilder);
 
             p.ProgressUpdated += ProgressUpdated;
 
@@ -141,17 +149,29 @@ namespace SevenZipNET
         /// <param name="keepStructure">Whether or not to retain folder structure in the archive. Default true.</param>
         public void ExtractWildcard(string destination, string wildcard, bool overwrite = false, bool keepStructure = true)
         {
-            WProcess p = new WProcess(new ArgumentBuilder()
-                .AddCommand(keepStructure ? SevenZipCommands.ExtractWithStructure : SevenZipCommands.Extract, archive)
-                .AddSwitch(new SwitchOutputStream(OutputStream.Progress, OutputStreamState.Stdout))
-                .AddSwitch(new SwitchOverwrite(overwrite))
-                .AddSwitch(new SwitchDestination(destination))
-                .AddTarget(wildcard)
-                );
+            ArgumentBuilder argumentBuilder = GetExtractArguments(destination, overwrite, keepStructure);
+
+            if (!string.IsNullOrEmpty(password))
+            {
+                argumentBuilder.AddSwitch(new SwitchPassword(password));
+            }
+
+            argumentBuilder.AddTarget(wildcard);
+
+            WProcess p = new WProcess(argumentBuilder);
 
             p.ProgressUpdated += ProgressUpdated;
 
             p.Execute();
+        }
+
+        private ArgumentBuilder GetExtractArguments(string destination, bool overwrite = false, bool keepStructure = true)
+        {
+            return new ArgumentBuilder()
+                .AddCommand(keepStructure ? SevenZipCommands.ExtractWithStructure : SevenZipCommands.Extract, archive)
+                .AddSwitch(new SwitchOutputStream(OutputStream.Progress, OutputStreamState.Stdout))
+                .AddSwitch(new SwitchOverwrite(overwrite))
+                .AddSwitch(new SwitchDestination(destination));
         }
 
         /// <summary>
@@ -160,9 +180,15 @@ namespace SevenZipNET
         /// <returns>If the archive is valid.</returns>
         public bool TestArchive()
         {
-            WProcess p = new WProcess(new ArgumentBuilder()
-                .AddCommand(SevenZipCommands.Test, archive)
-                );
+            ArgumentBuilder argumentBuilder = new ArgumentBuilder()
+                .AddCommand(SevenZipCommands.Test, archive);
+
+            if (!string.IsNullOrEmpty(password))
+            {
+                argumentBuilder.AddSwitch(new SwitchPassword(password));
+            }
+
+            WProcess p = new WProcess(argumentBuilder);
 
             p.ProgressUpdated += ProgressUpdated;
 

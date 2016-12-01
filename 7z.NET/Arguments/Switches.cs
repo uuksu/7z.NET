@@ -45,6 +45,29 @@ namespace SevenZipNET.Arguments
     }
 
     /// <summary>
+    /// A switch to add password for encryption.
+    /// </summary>
+    public class SwitchPassword : ArgumentSwitch
+    {
+        /// <param name="password">The password used in encryption.</param>
+        public SwitchPassword(string password) : base($"p{password}")
+        {
+
+        }
+    }
+
+    /// <summary>
+    /// A switch to add password for encryption.
+    /// </summary>
+    public class SwitchEncryptHeaders : ArgumentSwitch
+    {
+        public SwitchEncryptHeaders() : base("mhe")
+        {
+
+        }
+    }
+
+    /// <summary>
     /// The streams that are outputted by 7z when executing.
     /// </summary>
     public enum OutputStream
