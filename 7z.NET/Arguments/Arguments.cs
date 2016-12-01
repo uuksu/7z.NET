@@ -67,7 +67,11 @@ namespace SevenZipNET.Arguments
         /// <returns>The string representation of this argument particle.</returns>
         public override string Compile()
         {
-            strings[0] = Prefix + strings[0];
+            if (!strings[0].StartsWith(Prefix))
+            {
+                strings[0] = Prefix + strings[0];
+            }
+            
             return base.Compile();
         }
     }
